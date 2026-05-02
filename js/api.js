@@ -1,4 +1,4 @@
-const BASE_URL = "http://localhost:8080/api";
+const BASE_URL = "https://quiz-app-backend-production-ffe2.up.railway.app/api";
 
 // ── REGISTER ──────────────────────────────────────────
 async function registerUser(username, email, password) {
