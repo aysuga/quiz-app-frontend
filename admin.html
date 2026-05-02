@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel – QuizApp</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; }
+
+        /* ── Navbar ── */
+        .navbar {
+            background: #1a1a2e;
+            color: white;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .navbar-left h1 { font-size: 1.3rem; }
+        .navbar-left span {
+            font-size: 0.8rem;
+            color: #a78bfa;
+            margin-left: 10px;
+        }
+        .navbar-right a {
+            color: #a78bfa;
+            text-decoration: none;
+            margin-left: 18px;
+            font-size: 0.9rem;
+        }
+        .navbar-right a:hover { color: white; }
+        .logout-btn {
+            background: #dc2626;
+            color: white !important;
+            padding: 6px 14px;
+            border-radius: 6px;
+            font-size: 0.85rem !important;
+        }
+
+        /* ── Layout ── */
+        .container { max-width: 920px; margin: 30px auto; padding: 0 20px; }
+
+        .card {
+            background: white;
+            border-radius: 14px;
+            padding: 26px;
+            margin-bottom: 26px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+        }
+        .card h2 {
+            margin-bottom: 20px;
+            color: #1a1a2e;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* ── Form Elements ── */
+        label {
+            font-size: 0.83rem;
+            font-weight: 600;
+            color: #555;
+            margin-bottom: 5px;
+            display: block;
+        }
+        input, select, textarea {
+            width: 100%;
+            padding: 10px 14px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            margin-bottom: 14px;
+            font-size: 0.93rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        input:focus, select:focus, textarea:focus {
+            border-color: #7c3aed;
+        }
+        textarea { resize: vertical; min-height: 75px; }
+
+        /* ── Buttons ── */
+        .btn {
+            padding: 10px 22px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: bold;
+            transition: opacity 0.2s;
+        }
+        .btn:hover    { opacity: 0.85; }
+        .btn-primary  { background: #7c3aed; color: white; }
+        .btn-success  { background: #16a34a; color: white; }
+        .btn-danger   { background: #dc2626; color: white; font-size: 0.8rem; padding: 7px 14px; }
+
+        /* ── Grid ── */
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+
+        /* ── Messages ── */
+        .msg {
+            padding: 11px 16px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            font-size: 0.88rem;
+            display: none;
+        }
+        .msg.success { background: #dcfce7; color: #166534; display: block; }
+        .msg.error   { background: #fee2e2; color: #991b1b; display: block; }
+
+        /* ── Quiz List ── */
+        .quiz-item {
+            background: #f8f7ff;
+            border: 1px solid #e0d9ff;
+            border-radius: 10px;
+            padding: 14px 18px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .quiz-item-info { display: flex; flex-direction: column; gap: 3px; }
+        .quiz-item-title { font-weight: bold; color: #1a1a2e; }
+        .quiz-item-meta  { font-size: 0.8rem; color: #888; }
+
+        /* ── No Data ── */
+        .empty-state {
+            text-align: center;
+            padding: 30px;
+            color: #999;
+            font-size: 0.95rem;
+        }
+
+        /* ── Admin Badge ── */
+        .admin-info {
+            background: #ede9fe;
+            border: 1px solid #c4b5fd;
+            border-radius: 8px;
+            padding: 10px 16px;
+            font-size: 0.85rem;
+            color: #5b21b6;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+
+<!-- Navbar -->
+<nav class="navbar">
+    <div class="navbar-left">
+        <h1>🛠️ Admin Panel <span id="adminBadge"></span></h1>
+    </div>
+    <div class="navbar-right">
+        <a href="quizzes.html">📚 Quizzes</a>
+        <a href="index.html">🏠 Home</a>
+        <a href="#" class="logout-btn" onclick="logout()">🚪 Logout</a>
+    </div>
+</nav>
+
+<div class="container">
+
+    <!-- Admin Info Bar -->
+    <div class="admin-info" id="adminInfo">
+        👤 Logged in as: <strong id="adminName">Loading...</strong>
+        &nbsp;|&nbsp; User ID: <strong id="adminId">--</strong>
+    </div>
+
+    <!-- ── SECTION 1: Create Quiz ── -->
+    <div class="card">
+        <h2>➕ Create New Quiz</h2>
+        <div id="createMsg" class="msg"></div>
+
+        <label>Quiz Title *</label>
+        <input type="text" id="quizTitle" placeholder="e.g. Java Basics">
+
+        <label>Description</label>
+        <textarea id="quizDesc" placeholder="Short description of the quiz..."></textarea>
+
+        <div class="grid-2">
+            <div>
+                <label>Duration (minutes)</label>
+                <input type="number" id="quizDuration" placeholder="e.g. 10" min="1" value="10">
+            </div>
+            <div>
+                <!-- ✅ REMOVED "Created By" text field -->
+                <!-- createdBy is now taken automatically from localStorage -->
+                <label>Category (optional)</label>
+                <input type="text" id="quizCategory" placeholder="e.g. Java, Python, SQL">
+            </div>
+        </div>
+
+        <button class="btn btn-primary" onclick="createQuiz()">
+            ✅ Create Quiz
+        </button>
+    </div>
+
+    <!-- ── SECTION 2: Add Question ── -->
+    <div class="card">
+        <h2>❓ Add Question to Quiz</h2>
+        <div id="questionMsg" class="msg"></div>
+
+        <label>Select Quiz *</label>
+        <select id="quizSelect">
+            <option value="">-- Select a Quiz --</option>
+        </select>
+
+        <label>Question Text *</label>
+        <textarea id="qText" placeholder="Enter the question..."></textarea>
+
+        <div class="grid-2">
+            <div>
+                <label>Option A</label>
+                <input type="text" id="optA" placeholder="Option A">
+            </div>
+            <div>
+                <label>Option B</label>
+                <input type="text" id="optB" placeholder="Option B">
+            </div>
+            <div>
+                <label>Option C</label>
+                <input type="text" id="optC" placeholder="Option C">
+            </div>
+            <div>
+                <label>Option D</label>
+                <input type="text" id="optD" placeholder="Option D">
+            </div>
+        </div>
+
+        <label>Correct Answer *</label>
+        <select id="correctAnswer">
+            <option value="A">A</option>
+            <option value="B">B</option>
+            <option value="C">C</option>
+            <option value="D">D</option>
+        </select>
+
+        <button class="btn btn-success" onclick="addQuestion()">
+            ➕ Add Question
+        </button>
+    </div>
+
+    <!-- ── SECTION 3: All Quizzes ── -->
+    <div class="card">
+        <h2>📋 All Quizzes</h2>
+        <div id="quizList"><div class="empty-state">⏳ Loading quizzes...</div></div>
+    </div>
+
+</div>
+
+<script>
+    const API = 'http://localhost:8080/api/admin';
+
+    // ── On page load ─────────────────────────────────
+    window.onload = () => {
+        // ✅ Check if user is logged in
+        const userId   = localStorage.getItem('userId');
+        const username = localStorage.getItem('username');
+        const role     = localStorage.getItem('role');
+
+        if (!userId) {
+            alert('⚠️ You are not logged in! Redirecting to login...');
+            window.location.href = 'login.html';
+            return;
+        }
+
+        if (role !== 'ADMIN') {
+            alert('⛔ Access denied! Admin only.');
+            window.location.href = 'quizzes.html';
+            return;
+        }
+
+        // ✅ Show admin info in navbar
+        document.getElementById('adminName').textContent = username;
+        document.getElementById('adminId').textContent   = userId;
+
+        loadQuizzes();
+    };
+
+    // ── Load all quizzes ─────────────────────────────
+    async function loadQuizzes() {
+        try {
+            const res  = await fetch(`${API}/quiz/all`);
+            const data = await res.json();
+
+            // Populate dropdown
+            const sel = document.getElementById('quizSelect');
+            sel.innerHTML = '<option value="">-- Select a Quiz --</option>';
+            data.forEach(q => {
+                sel.innerHTML +=
+                    `<option value="${q.id}">[${q.id}] ${q.title}</option>`;
+            });
+
+            // Populate quiz list
+            const list = document.getElementById('quizList');
+            if (data.length === 0) {
+                list.innerHTML =
+                    '<div class="empty-state">📭 No quizzes yet. Create one above!</div>';
+                return;
+            }
+
+            list.innerHTML = data.map(q => `
+                <div class="quiz-item">
+                    <div class="quiz-item-info">
+                        <span class="quiz-item-title">📝 ${q.title}</span>
+                        <span class="quiz-item-meta">
+                            ID: ${q.id} &nbsp;|&nbsp;
+                            ⏱️ ${q.duration} min &nbsp;|&nbsp;
+                            ${q.description || 'No description'}
+                        </span>
+                    </div>
+                    <button class="btn btn-danger"
+                        onclick="deleteQuiz(${q.id}, '${q.title}')">
+                        🗑️ Delete
+                    </button>
+                </div>
+            `).join('');
+
+        } catch (e) {
+            console.error('loadQuizzes error:', e);
+            document.getElementById('quizList').innerHTML =
+                '<div class="empty-state" style="color:#dc2626">❌ Failed to load quizzes.</div>';
+        }
+    }
+
+    // ── Create quiz ──────────────────────────────────
+    async function createQuiz() {
+        const title    = document.getElementById('quizTitle').value.trim();
+        const desc     = document.getElementById('quizDesc').value.trim();
+        const duration = document.getElementById('quizDuration').value;
+        const msgBox   = document.getElementById('createMsg');
+
+        if (!title) {
+            showMsg(msgBox, '⚠️ Quiz title is required!', 'error');
+            return;
+        }
+
+        // ✅ KEY FIX: Get userId from localStorage (saved during login)
+        const userId = localStorage.getItem('userId');
+        if (!userId) {
+            showMsg(msgBox, '⚠️ Session expired! Please login again.', 'error');
+            setTimeout(() => window.location.href = 'login.html', 2000);
+            return;
+        }
+
+        try {
+            const res = await fetch(`${API}/quiz/create`, {
+                method:  'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    title,
+                    description: desc,
+                    duration:    parseInt(duration) || 10,
+                    createdBy:   parseInt(userId)    // ✅ Sends Long (number)
+                })
+            });
+
+            if (!res.ok) {
+                const errText = await res.text();
+                console.error('Server error:', errText);
+                showMsg(msgBox, '❌ Failed to create quiz!', 'error');
+                return;
+            }
+
+            const data = await res.json();
+            showMsg(msgBox,
+                `✅ Quiz "${data.title}" created successfully! (ID: ${data.quizId})`,
+                'success');
+
+            // Clear form
+            document.getElementById('quizTitle').value    = '';
+            document.getElementById('quizDesc').value     = '';
+            document.getElementById('quizDuration').value = '10';
+            document.getElementById('quizCategory').value = '';
+
+            loadQuizzes(); // Refresh list & dropdown
+
+        } catch (e) {
+            console.error('createQuiz error:', e);
+            showMsg(msgBox, '❌ Error connecting to server!', 'error');
+        }
+    }
+
+    // ── Add question ─────────────────────────────────
+    async function addQuestion() {
+        const quizId  = document.getElementById('quizSelect').value;
+        const qText   = document.getElementById('qText').value.trim();
+        const optA    = document.getElementById('optA').value.trim();
+        const optB    = document.getElementById('optB').value.trim();
+        const optC    = document.getElementById('optC').value.trim();
+        const optD    = document.getElementById('optD').value.trim();
+        const correct = document.getElementById('correctAnswer').value;
+        const msgBox  = document.getElementById('questionMsg');
+
+        if (!quizId) {
+            showMsg(msgBox, '⚠️ Please select a quiz!', 'error'); return;
+        }
+        if (!qText || !optA || !optB || !optC || !optD) {
+            showMsg(msgBox, '⚠️ All question fields are required!', 'error'); return;
+        }
+
+        try {
+            const res = await fetch(`${API}/quiz/${quizId}/add-question`, {
+                method:  'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    questionText:  qText,
+                    optionA:       optA,
+                    optionB:       optB,
+                    optionC:       optC,
+                    optionD:       optD,
+                    correctAnswer: correct
+                })
+            });
+
+            if (!res.ok) {
+                const errText = await res.text();
+                console.error('Server error:', errText);
+                showMsg(msgBox, '❌ Failed to add question!', 'error');
+                return;
+            }
+
+            const data = await res.json();
+            showMsg(msgBox,
+                `✅ Question added! (ID: ${data.questionId})`,
+                'success');
+
+            // Clear question fields only
+            document.getElementById('qText').value = '';
+            document.getElementById('optA').value  = '';
+            document.getElementById('optB').value  = '';
+            document.getElementById('optC').value  = '';
+            document.getElementById('optD').value  = '';
+
+        } catch (e) {
+            console.error('addQuestion error:', e);
+            showMsg(msgBox, '❌ Error connecting to server!', 'error');
+        }
+    }
+
+    // ── Delete quiz ──────────────────────────────────
+    async function deleteQuiz(quizId, title) {
+        if (!confirm(`🗑️ Delete quiz "${title}"?\nThis will also remove ALL its questions!`))
+            return;
+
+        try {
+            const res = await fetch(`${API}/quiz/${quizId}`, {
+                method: 'DELETE'
+            });
+            if (res.ok) {
+                loadQuizzes();
+            } else {
+                alert('❌ Failed to delete quiz!');
+            }
+        } catch (e) {
+            alert('❌ Error connecting to server!');
+        }
+    }
+
+    // ── Logout ────────────────────────────────────────
+    function logout() {
+        localStorage.clear();
+        window.location.href = 'login.html';
+    }
+
+    // ── Helper: show message ─────────────────────────
+    function showMsg(el, text, type) {
+        el.textContent = text;
+        el.className   = `msg ${type}`;
+        setTimeout(() => {
+            el.className = 'msg';
+        }, 4000);
+    }
+</script>
+
+</body>
+</html>

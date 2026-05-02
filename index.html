@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QuizApp – Home</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            color: white;
+        }
+
+        /* ── Navbar ── */
+        nav {
+            background: rgba(255,255,255,0.05);
+            backdrop-filter: blur(10px);
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .brand { color: white; font-size: 1.3rem; font-weight: bold; text-decoration: none; }
+        .nav-links { display: flex; align-items: center; gap: 8px; }
+        .nav-links a {
+            color: rgba(255,255,255,0.75);
+            text-decoration: none;
+            padding: 7px 14px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            transition: background 0.2s, color 0.2s;
+        }
+        .nav-links a:hover          { background: rgba(255,255,255,0.1); color: white; }
+        .nav-links a.btn-nav-login  { background: #7c3aed; color: white; font-weight: 600; }
+        .nav-links a.btn-nav-login:hover { background: #5b21b6; }
+
+        /* ── Hero ── */
+        .hero {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 90px 20px 60px;
+        }
+        .hero h1 { font-size: 3rem; font-weight: 800; margin-bottom: 16px; line-height: 1.2; }
+        .hero h1 span { color: #a78bfa; }
+        .hero p  { font-size: 1.1rem; color: rgba(255,255,255,0.75); max-width: 520px; margin-bottom: 36px; }
+
+        .hero-btns { display: flex; gap: 14px; flex-wrap: wrap; justify-content: center; }
+        .btn-hero-primary {
+            padding: 14px 32px;
+            background: linear-gradient(135deg, #7c3aed, #5b21b6);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            text-decoration: none;
+            transition: opacity 0.2s, transform 0.1s;
+        }
+        .btn-hero-primary:hover  { opacity: 0.9; transform: translateY(-2px); }
+        .btn-hero-secondary {
+            padding: 14px 32px;
+            background: rgba(255,255,255,0.1);
+            color: white;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            text-decoration: none;
+            transition: background 0.2s, transform 0.1s;
+        }
+        .btn-hero-secondary:hover { background: rgba(255,255,255,0.2); transform: translateY(-2px); }
+
+        /* ── Features ── */
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 24px;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px 20px 80px;
+        }
+        .feature-card {
+            background: rgba(255,255,255,0.07);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 16px;
+            padding: 28px 24px;
+            text-align: center;
+            transition: transform 0.2s;
+        }
+        .feature-card:hover { transform: translateY(-4px); }
+        .feature-icon { font-size: 2.2rem; margin-bottom: 12px; }
+        .feature-card h3 { font-size: 1rem; font-weight: 700; margin-bottom: 8px; color: #a78bfa; }
+        .feature-card p  { font-size: 0.87rem; color: rgba(255,255,255,0.65); line-height: 1.5; }
+    </style>
+</head>
+<body>
+
+<!-- ── Navbar ── -->
+<nav>
+    <a href="index.html" class="brand">🎓 QuizApp</a>
+    <div class="nav-links" id="navLinks">
+        <a href="index.html">Home</a>
+        <a href="quizzes.html">Quizzes</a>
+        <!-- login/logout rendered by JS below -->
+    </div>
+</nav>
+
+<!-- ── Hero ── -->
+<section class="hero">
+    <h1>Welcome to <span>QuizApp!</span></h1>
+    <p>Test your knowledge, challenge your friends, and top the leaderboard!</p>
+    <div class="hero-btns">
+        <a href="quizzes.html" class="btn-hero-primary">Start Quiz</a>
+        <a href="register.html" class="btn-hero-secondary">Register Now</a>
+    </div>
+</section>
+
+<!-- ── Features ── -->
+<section class="features">
+    <div class="feature-card">
+        <div class="feature-icon">⚡</div>
+        <h3>Fast & Fun</h3>
+        <p>Timed quizzes to keep you on your toes!</p>
+    </div>
+    <div class="feature-card">
+        <div class="feature-icon">🏆</div>
+        <h3>Leaderboards</h3>
+        <p>Compete with others and top the charts!</p>
+    </div>
+    <div class="feature-card">
+        <div class="feature-icon">📚</div>
+        <h3>Many Topics</h3>
+        <p>From Java to SQL — we've got you covered!</p>
+    </div>
+</section>
+
+<script>
+    // ── Render navbar based on login state ────────────
+    (function renderNav() {
+        const userId   = localStorage.getItem('userId');
+        const username = localStorage.getItem('username');
+        const role     = localStorage.getItem('role');
+        const nav      = document.getElementById('navLinks');
+
+        if (userId) {
+            // ✅ Logged in → show username + logout
+            nav.innerHTML = `
+                <a href="index.html">Home</a>
+                <a href="quizzes.html">Quizzes</a>
+                ${role === 'ADMIN' ? '<a href="admin.html">⚙️ Admin</a>' : ''}
+                <span style="color:#a78bfa; padding: 7px 10px;">👤 ${username}</span>
+                <a href="#" onclick="logout()" style="color:#f87171;">🚪 Logout</a>
+            `;
+        } else {
+            // ❌ Not logged in → show Login + Register
+            nav.innerHTML = `
+                <a href="index.html">Home</a>
+                <a href="quizzes.html">Quizzes</a>
+                <a href="register.html">Register</a>
+                <a href="login.html" class="btn-nav-login">🔐 Login</a>
+            `;
+        }
+    })();
+
+    function logout() {
+        localStorage.clear();
+        window.location.reload();
+    }
+</script>
+
+</body>
+</html>

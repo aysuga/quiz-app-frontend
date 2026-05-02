@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Quiz – QuizApp</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+      min-height: 100vh;
+    }
+
+    /* ── Navbar ── */
+    nav {
+      background: rgba(255,255,255,0.05);
+      backdrop-filter: blur(8px);
+      padding: 13px 28px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+    .nav-back { color: #a78bfa; text-decoration: none; font-weight: 600; font-size: 0.92rem; }
+    .nav-back:hover { color: #fff; }
+    .nav-right { display: flex; align-items: center; gap: 12px; }
+    .nav-user  { color: rgba(255,255,255,0.7); font-size: 0.88rem; }
+    .btn-logout {
+      background: none; border: 1px solid rgba(255,255,255,0.2);
+      color: #f87171; padding: 6px 13px; border-radius: 7px;
+      font-size: 0.84rem; cursor: pointer; transition: background 0.2s;
+    }
+    .btn-logout:hover { background: rgba(248,113,113,0.12); }
+
+    /* ── Container ── */
+    .container { max-width: 740px; margin: 0 auto; padding: 30px 20px; }
+
+    /* ── Loading ── */
+    .loading-box { text-align: center; padding: 80px 20px; color: rgba(255,255,255,0.8); }
+    .loading-box .icon { font-size: 3rem; margin-bottom: 14px; }
+    .loading-box p { font-size: 1rem; }
+
+    /* ── Quiz Card ── */
+    .quiz-card {
+      background: #fff; border-radius: 18px;
+      padding: 30px 28px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3); color: #1a1a2e;
+    }
+
+    /* Header */
+    .qz-header {
+      display: flex; justify-content: space-between;
+      align-items: center; margin-bottom: 20px;
+      padding-bottom: 14px; border-bottom: 2px solid #f0f0f0;
+    }
+    .qz-title { font-size: 1rem; font-weight: 700; color: #1a1a2e; }
+    .qz-timer {
+      background: #fef3c7; color: #92400e;
+      padding: 5px 14px; border-radius: 20px;
+      font-size: 0.85rem; font-weight: 700;
+    }
+    .qz-timer.warning { background: #fee2e2; color: #991b1b; }
+
+    /* Progress */
+    .prog-wrap { background: #f0f0f0; border-radius: 10px; height: 7px; margin-bottom: 6px; overflow: hidden; }
+    .prog-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #7c3aed, #a78bfa);
+      border-radius: 10px; transition: width 0.3s; width: 0%;
+    }
+    .prog-label { font-size: 0.79rem; color: #999; margin-bottom: 6px; }
+    .answered-count { font-size: 0.79rem; color: #888; margin-bottom: 20px; text-align: center; }
+
+    /* Question */
+    .q-num {
+      font-size: 0.75rem; font-weight: 700; color: #7c3aed;
+      text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px;
+    }
+    .q-text { font-size: 1.05rem; font-weight: 600; color: #1a1a2e; margin-bottom: 20px; line-height: 1.55; }
+
+    /* Options */
+    .options { display: flex; flex-direction: column; gap: 10px; margin-bottom: 26px; }
+    .opt-btn {
+      display: flex; align-items: center; gap: 12px;
+      padding: 12px 16px; border: 2px solid #e5e7eb;
+      border-radius: 10px; background: #fff; color: #333;
+      font-size: 0.93rem; cursor: pointer; text-align: left;
+      transition: border-color 0.15s, background 0.15s; width: 100%;
+    }
+    .opt-btn:hover   { border-color: #7c3aed; background: #f5f3ff; }
+    .opt-btn.selected {
+      border-color: #7c3aed; background: #ede9fe;
+      color: #5b21b6; font-weight: 600;
+    }
+    .opt-label {
+      background: #7c3aed; color: #fff;
+      min-width: 26px; height: 26px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.77rem; font-weight: 700; flex-shrink: 0;
+    }
+    .opt-btn.selected .opt-label { background: #5b21b6; }
+
+    /* Nav buttons */
+    .nav-btns { display: flex; justify-content: space-between; gap: 10px; }
+    .btn-prev, .btn-next {
+      padding: 10px 22px; border: 2px solid #e5e7eb;
+      border-radius: 9px; background: #fff; color: #555;
+      font-size: 0.9rem; font-weight: 600; cursor: pointer;
+      transition: border-color 0.2s, color 0.2s;
+    }
+    .btn-prev:hover:not(:disabled),
+    .btn-next:hover:not(:disabled) { border-color: #7c3aed; color: #7c3aed; }
+    .btn-prev:disabled, .btn-next:disabled { opacity: 0.35; cursor: not-allowed; }
+    .btn-submit {
+      padding: 10px 26px; border: none; border-radius: 9px;
+      background: linear-gradient(135deg, #16a34a, #15803d);
+      color: #fff; font-size: 0.9rem; font-weight: 700;
+      cursor: pointer; display: none; transition: opacity 0.2s;
+    }
+    .btn-submit:hover { opacity: 0.88; }
+
+    /* ── Result Screen ── */
+    .result-screen { display: none; text-align: center; padding: 16px; }
+    .res-icon  { font-size: 4rem; margin-bottom: 12px; }
+    .res-title { font-size: 1.6rem; font-weight: 800; color: #1a1a2e; margin-bottom: 8px; }
+    .res-score { font-size: 3.2rem; font-weight: 900; color: #7c3aed; margin: 14px 0 6px; }
+    .res-sub   { color: #666; font-size: 0.95rem; margin-bottom: 26px; }
+    .res-btns  { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+    .btn-res {
+      padding: 11px 24px; border-radius: 9px; font-size: 0.92rem;
+      font-weight: 700; cursor: pointer; text-decoration: none;
+      transition: opacity 0.2s; display: inline-block;
+    }
+    .btn-res:hover { opacity: 0.85; }
+    .btn-res-p { background: #7c3aed; color: #fff; border: none; }
+    .btn-res-s { background: #fff; color: #7c3aed; border: 2px solid #7c3aed; }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a href="quizzes.html" class="nav-back">← All Quizzes</a>
+  <div class="nav-right">
+    <span class="nav-user" id="navUser">👤 ...</span>
+    <button class="btn-logout" onclick="doLogout()">🚪 Logout</button>
+  </div>
+</nav>
+
+<div class="container">
+
+  <div class="loading-box" id="loadingBox">
+    <div class="icon">⏳</div>
+    <p>Loading quiz questions...</p>
+  </div>
+
+  <div class="quiz-card" id="quizCard" style="display:none;">
+    <div class="qz-header">
+      <div class="qz-title" id="qzTitle">Quiz</div>
+      <div class="qz-timer" id="qzTimer">⏱️ --:--</div>
+    </div>
+
+    <div class="prog-wrap"><div class="prog-fill" id="progFill"></div></div>
+    <div class="prog-label"     id="progLabel">Question 1 of 0</div>
+    <div class="answered-count" id="answeredCount">0 of 0 answered</div>
+
+    <div class="q-num"  id="qNum">Q1</div>
+    <div class="q-text" id="qText">Loading...</div>
+
+    <div class="options" id="optionsBox"></div>
+
+    <div class="nav-btns">
+      <button class="btn-prev"   id="btnPrev"   onclick="prevQ()">← Prev</button>
+      <button class="btn-next"   id="btnNext"   onclick="nextQ()">Next →</button>
+      <button class="btn-submit" id="btnSubmit" onclick="submitQuiz()">✅ Submit Quiz</button>
+    </div>
+  </div>
+
+  <div class="quiz-card result-screen" id="resultScreen">
+    <div class="res-icon">🎉</div>
+    <div class="res-title">Quiz Submitted!</div>
+    <div class="res-score" id="resScore">--</div>
+    <div class="res-sub"   id="resSub">out of 0 questions correct 🎯</div>
+    <div class="res-btns">
+      <a href="quizzes.html" class="btn-res btn-res-s">📚 Try Another Quiz</a>
+      <a href="#" class="btn-res btn-res-p" id="leaderLink">🏆 View Leaderboard</a>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  var API       = 'http://localhost:8080/api';
+  var quizId    = null;
+  var userId    = null;
+  var questions = [];
+  var current   = 0;
+
+  // ✅ KEY: stores { "questionId": "full option text" }
+  // e.g. { "5": "Java", "6": "8 bytes" }
+  // Backend QuizAttemptService does:
+  //   submitted = answers.get("5")           → "Java"
+  //   correctText = getOptionText(q, "B")    → "Java"
+  //   "Java".equalsIgnoreCase("Java")        → ✅ score++
+  var answers   = {};
+
+  var timerRef  = null;
+  var timeLeft  = 0;
+
+  // ── Init ──────────────────────────────────────────
+  window.onload = function () {
+    var params = new URLSearchParams(window.location.search);
+    quizId = params.get('quizId');
+    userId = params.get('userId');
+
+    console.log('quiz.html | quizId:', quizId, '| userId:', userId);
+
+    var uname = localStorage.getItem('username') || 'Guest';
+    document.getElementById('navUser').textContent = '👤 ' + uname;
+
+    if (!localStorage.getItem('userId')) {
+      alert('Please login first!');
+      window.location.href = 'login.html';
+      return;
+    }
+    if (!quizId) {
+      alert('Invalid quiz. Redirecting...');
+      window.location.href = 'quizzes.html';
+      return;
+    }
+
+    loadQuiz();
+  };
+
+  // ── Load Quiz + Questions ─────────────────────────
+  async function loadQuiz() {
+    try {
+      var qzRes  = await fetch(API + '/quiz/' + quizId);
+      var qzData = await qzRes.json();
+      document.getElementById('qzTitle').textContent = '📝 ' + qzData.title;
+      document.getElementById('leaderLink').href = 'leaderboard.html?quizId=' + quizId;
+
+      var qRes  = await fetch(API + '/quiz/' + quizId + '/questions');
+      var qData = await qRes.json();
+      console.log('Questions loaded:', qData);
+
+      if (!Array.isArray(qData) || qData.length === 0) {
+        document.getElementById('loadingBox').innerHTML =
+          '<div class="icon">📭</div><p>No questions found for this quiz!</p>';
+        return;
+      }
+
+      questions = qData;
+      timeLeft  = (qzData.duration || 10) * 60;
+      startTimer();
+
+      document.getElementById('loadingBox').style.display = 'none';
+      document.getElementById('quizCard').style.display  = 'block';
+      renderQ();
+
+    } catch (err) {
+      console.error('loadQuiz error:', err);
+      document.getElementById('loadingBox').innerHTML =
+        '<div class="icon">❌</div><p>Failed to load quiz. Check backend!</p>';
+    }
+  }
+
+  // ── Render Question ───────────────────────────────
+  function renderQ() {
+    var q     = questions[current];
+    var total = questions.length;
+    var pct   = Math.round(((current + 1) / total) * 100);
+
+    document.getElementById('progFill').style.width  = pct + '%';
+    document.getElementById('progLabel').textContent =
+      'Question ' + (current + 1) + ' of ' + total;
+    document.getElementById('qNum').textContent  = 'Q' + (current + 1);
+    document.getElementById('qText').textContent = q.questionText;
+
+    var doneCount = Object.keys(answers).length;
+    document.getElementById('answeredCount').textContent =
+      doneCount + ' of ' + total + ' answered';
+
+    var opts = [
+      { lbl: 'A', txt: q.optionA },
+      { lbl: 'B', txt: q.optionB },
+      { lbl: 'C', txt: q.optionC },
+      { lbl: 'D', txt: q.optionD }
+    ];
+
+    var html = '';
+    opts.forEach(function (o) {
+      var qKey = String(q.id);
+
+      // ✅ Highlight: compare stored FULL TEXT to this option's text
+      var sel = (answers[qKey] === o.txt) ? 'selected' : '';
+
+      // ✅ Store index in data attribute — avoids quote-escaping bugs
+      html +=
+        '<button class="opt-btn ' + sel + '" ' +
+          'data-qid="' + q.id + '" ' +
+          'data-txt="' + o.txt.replace(/"/g, '&quot;') + '" ' +
+          'onclick="pickAnswer(this)">' +
+          '<span class="opt-label">' + o.lbl + '</span>' +
+          o.txt +
+        '</button>';
+    });
+    document.getElementById('optionsBox').innerHTML = html;
+
+    document.getElementById('btnPrev').disabled =
+      (current === 0);
+    document.getElementById('btnNext').style.display =
+      (current < total - 1) ? 'inline-block' : 'none';
+    document.getElementById('btnSubmit').style.display =
+      (current === total - 1) ? 'inline-block' : 'none';
+  }
+
+  // ✅ THE CORE FIX:
+  // Store the FULL option text (e.g. "Java"), NOT the letter ("A")
+  // Backend QuizAttemptService.getOptionText() converts letter → full text
+  // and compares submitted full text to correctText
+  function pickAnswer(btn) {
+    var qid  = btn.getAttribute('data-qid');   // e.g. "5"
+    var txt  = btn.getAttribute('data-txt');   // e.g. "Java"
+    answers[qid] = txt;                        // ✅ { "5": "Java" }
+    console.log('Answer stored:', qid, '→', txt);
+    renderQ();
+  }
+
+  function prevQ() { if (current > 0)                    { current--; renderQ(); } }
+  function nextQ() { if (current < questions.length - 1) { current++; renderQ(); } }
+
+  // ── Timer ─────────────────────────────────────────
+  function startTimer() {
+    updateTimerDisplay();
+    timerRef = setInterval(function () {
+      timeLeft--;
+      updateTimerDisplay();
+      if (timeLeft <= 0) {
+        clearInterval(timerRef);
+        alert('⏰ Time is up! Auto-submitting...');
+        submitQuiz();
+      }
+    }, 1000);
+  }
+
+  function updateTimerDisplay() {
+    var m  = Math.floor(timeLeft / 60);
+    var s  = timeLeft % 60;
+    var el = document.getElementById('qzTimer');
+    el.textContent = '⏱️ ' + pad(m) + ':' + pad(s);
+    el.className   = 'qz-timer' + (timeLeft <= 60 ? ' warning' : '');
+  }
+  function pad(n) { return n < 10 ? '0' + n : '' + n; }
+
+  // ── Submit ────────────────────────────────────────
+  async function submitQuiz() {
+    clearInterval(timerRef);
+
+    var unanswered = questions.length - Object.keys(answers).length;
+    if (unanswered > 0) {
+      if (!confirm(unanswered + ' question(s) unanswered. Submit anyway?')) {
+        startTimer();
+        return;
+      }
+    }
+
+    // ✅ What gets sent to backend:
+    // { "5": "Java", "6": "8 bytes", "7": "Paris" }
+    // Keys   = String(questionId)   ← matches: String.valueOf(q.getId())
+    // Values = full option text     ← matches: getOptionText(q, correctLetter)
+    console.log('Submitting answers payload:', JSON.stringify(answers));
+
+    try {
+      var res = await fetch(
+        API + '/quiz/' + quizId + '/submit?userId=' + userId,
+        {
+          method:  'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body:    JSON.stringify(answers)
+        }
+      );
+
+      var data = await res.json();
+      console.log('Submit response:', data);
+
+      document.getElementById('quizCard').style.display     = 'none';
+      document.getElementById('resultScreen').style.display = 'block';
+      document.getElementById('resScore').textContent       = data.score;
+      document.getElementById('resSub').textContent         =
+        'out of ' + questions.length + ' questions correct 🎯';
+
+    } catch (err) {
+      console.error('submitQuiz error:', err);
+      alert('❌ Submit failed. Please try again.');
+    }
+  }
+
+  // ── Logout ────────────────────────────────────────
+  function doLogout() {
+    clearInterval(timerRef);
+    localStorage.clear();
+    window.location.href = 'login.html';
+  }
+</script>
+</body>
+</html>

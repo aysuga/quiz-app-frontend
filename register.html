@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Register — QuizApp</title>
+
+  <style>
+    /* ── RESET & BASE ─────────────────────────────── */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── NAVBAR ───────────────────────────────────── */
+    .navbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 40px;
+      background: rgba(255, 255, 255, 0.15);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .nav-brand {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: white;
+      text-decoration: none;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 24px;
+    }
+
+    .nav-links a {
+      color: rgba(255, 255, 255, 0.85);
+      text-decoration: none;
+      font-weight: 500;
+      font-size: 0.95rem;
+      transition: color 0.2s;
+    }
+
+    .nav-links a:hover,
+    .nav-links a.active {
+      color: white;
+    }
+
+    /* ── AUTH CONTAINER ───────────────────────────── */
+    .auth-container {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 16px;
+    }
+
+    .auth-card {
+      background: white;
+      border-radius: 20px;
+      padding: 40px;
+      width: 100%;
+      max-width: 420px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+    }
+
+    .auth-card h2 {
+      font-size: 1.8rem;
+      color: #2d3748;
+      margin-bottom: 6px;
+      text-align: center;
+    }
+
+    .auth-card > p {
+      color: #718096;
+      text-align: center;
+      margin-bottom: 24px;
+      font-size: 0.95rem;
+    }
+
+    /* ── MESSAGE BOX ──────────────────────────────── */
+    .message {
+      display: none;
+      padding: 12px 16px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      font-weight: 500;
+      text-align: center;
+      font-size: 0.9rem;
+    }
+
+    .message.success {
+      background-color: #d4edda;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+    }
+
+    .message.error {
+      background-color: #f8d7da;
+      color: #721c24;
+      border: 1px solid #f5c6cb;
+    }
+
+    /* ── FORM ─────────────────────────────────────── */
+    .form-group {
+      margin-bottom: 18px;
+    }
+
+    .form-group label {
+      display: block;
+      font-weight: 600;
+      color: #4a5568;
+      margin-bottom: 6px;
+      font-size: 0.9rem;
+    }
+
+    .form-group input {
+      width: 100%;
+      padding: 12px 16px;
+      border: 2px solid #e2e8f0;
+      border-radius: 10px;
+      font-size: 0.95rem;
+      color: #2d3748;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      outline: none;
+      background: #f8fafc;
+    }
+
+    .form-group input:focus {
+      border-color: #667eea;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.15);
+      background: white;
+    }
+
+    /* ── BUTTON ───────────────────────────────────── */
+    .btn-register {
+      width: 100%;
+      padding: 13px;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.2s, transform 0.1s;
+      margin-top: 6px;
+    }
+
+    .btn-register:hover {
+      opacity: 0.92;
+      transform: translateY(-1px);
+    }
+
+    .btn-register:active {
+      transform: translateY(0);
+    }
+
+    .btn-register:disabled {
+      opacity: 0.65;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    /* ── AUTH SWITCH ──────────────────────────────── */
+    .auth-switch {
+      text-align: center;
+      margin-top: 20px;
+      font-size: 0.9rem;
+      color: #718096;
+    }
+
+    .auth-switch a {
+      color: #667eea;
+      font-weight: 600;
+      text-decoration: none;
+    }
+
+    .auth-switch a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ── NAVBAR ── -->
+  <nav class="navbar">
+    <a class="nav-brand" href="index.html">🎓 Quiz App</a>
+    <div class="nav-links">
+      <a href="index.html">Home</a>
+      <a href="quizzes.html">Quizzes</a>
+      <a href="login.html">Login</a>
+      <a href="register.html" class="active">Register</a>
+    </div>
+  </nav>
+
+  <!-- ── REGISTER CARD ── -->
+  <div class="auth-container">
+    <div class="auth-card">
+
+      <h2>Create Account 🎉</h2>
+      <p>Join thousands of quiz enthusiasts!</p>
+
+      <!-- Message Box -->
+      <div id="message" class="message"></div>
+
+      <!-- Register Form -->
+      <form id="registerForm">
+
+        <div class="form-group">
+          <label for="username">Username</label>
+          <input
+            type="text"
+            id="username"
+            placeholder="Enter your username"
+            required
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="email">Email</label>
+          <input
+            type="email"
+            id="email"
+            placeholder="Enter your email"
+            required
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input
+            type="password"
+            id="password"
+            placeholder="Enter your password"
+            required
+          />
+        </div>
+
+        <button type="submit" class="btn-register" id="registerBtn">
+          📝 Register
+        </button>
+
+      </form>
+
+      <p class="auth-switch">
+        Already have an account?
+        <a href="login.html">Login here</a>
+      </p>
+
+    </div>
+  </div>
+
+  <!-- ── JAVASCRIPT ── -->
+  <script>
+    const form      = document.getElementById('registerForm');
+    const msgBox    = document.getElementById('message');
+    const registerBtn = document.getElementById('registerBtn');
+
+    // ── Show message helper ───────────────────────────
+    function showMsg(text, isSuccess) {
+      msgBox.textContent = text;
+      msgBox.className   = 'message ' + (isSuccess ? 'success' : 'error');
+      msgBox.style.display = 'block';
+    }
+
+    // ── Form submit ───────────────────────────────────
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault(); // ✅ Stop page reload
+
+      const username = document.getElementById('username').value.trim();
+      const email    = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value.trim();
+
+      // Client-side validation
+      if (!username || !email || !password) {
+        showMsg('❌ Please fill in all fields!', false);
+        return;
+      }
+
+      // Loading state
+      registerBtn.disabled    = true;
+      registerBtn.textContent = '⏳ Registering...';
+
+      try {
+        const response = await fetch('http://localhost:8080/api/users/register', {
+          method:  'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body:    JSON.stringify({ username, email, password })
+        });
+
+        // ✅ Backend returns plain String
+        const result = await response.text();
+
+        if (response.ok) {
+          showMsg('✅ Registered successfully! Redirecting to login...', true);
+          setTimeout(() => window.location.href = 'login.html', 1500);
+
+        } else if (result.includes('Username already taken')) {
+          showMsg('❌ Username already taken! Try another.', false);
+
+        } else if (result.includes('Email already registered')) {
+          showMsg('❌ Email already registered! Try logging in.', false);
+
+        } else {
+          showMsg('❌ ' + (result || 'Registration failed. Try again!'), false);
+        }
+
+      } catch (err) {
+        console.error('Register error:', err);
+        showMsg('❌ Cannot connect to server. Is backend running on port 8080?', false);
+
+      } finally {
+        registerBtn.disabled    = false;
+        registerBtn.textContent = '📝 Register';
+      }
+    });
+  </script>
+
+</body>
+</html>
